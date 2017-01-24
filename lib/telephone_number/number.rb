@@ -1,6 +1,7 @@
 module TelephoneNumber
   class Number
     include TelephoneNumber::Parser
+    include TelephoneNumber::Formatter
 
     attr_reader :original_number, :country, :e164_number, :national_number
 
