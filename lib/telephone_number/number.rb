@@ -22,7 +22,7 @@ module TelephoneNumber
     end
 
     def format
-      @format ||= extract_format(national_number, country)
+      @format ||= extract_format
     end
   end
 end

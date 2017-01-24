@@ -36,12 +36,16 @@ module TelephoneNumber
       end.compact
     end
 
-    def extract_format(national_number, country)
+    def extract_format
       country_data = TelephoneNumber::PhoneData.phone_data[country.to_sym]
-      country_data[TelephoneNumber::PhoneData::FORMATS].detect do |format|
-        format[TelephoneNumber::PhoneData::LEADING_DIGITS].nil? \
-          || national_number =~ Regexp.new("^#{format[TelephoneNumber::PhoneData::LEADING_DIGITS]}") \
-          && national_number =~ Regexp.new("^#{format[:pattern]}$")
+      native_country_format = country_data[TelephoneNumber::PhoneData::FORMATS].detect do |format|
+        (format[TelephoneNumber::PhoneData::LEADING_DIGITS].nil? \
+          || national_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::LEADING_DIGITS]})")) \
+          && national_number =~ Regexp.new("^(#{format[:pattern]})$")
+      end
+
+      if !native_country_format
+
       end
     end
   end
