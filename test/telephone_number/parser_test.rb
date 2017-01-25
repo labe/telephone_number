@@ -2,6 +2,10 @@ require "test_helper"
 
 module TelephoneNumber
   class ParserTest < Minitest::Test
+    def setup
+      @test_data = YAML.load_file("test/test.yml")
+    end
+
     def test_sanitize_removes_all_non_numeric_characters
       numbers = %w(555$$@@5555555 ##$#%#5555555555)
       numbers.each do |number|
@@ -10,37 +14,51 @@ module TelephoneNumber
       end
     end
 
-    def test_extract_number_types_returns_local_and_e164_for_us
-      us_local_numbers = %w(3175083345 13175083345)
-      us_local_numbers.each do |number|
-        telephone_number = TelephoneNumber.parse(number, "US")
-        assert_equal us_local_numbers, telephone_number.extract_number_types
+    focus
+    def test_extract_number_types_returns_local_and_e164_for_all_countries
+      @test_data.each do |country, number_object|
+        number_object.each do |name, number_data|
+          comparison = [number_data[:national], number_data[:e164]]
+          number_data.each do |type, number|
+            telephone_number = TelephoneNumber.parse(number, country)
+            binding.pry unless comparison ==  telephone_number.extract_number_types
+            assert_equal comparison, telephone_number.extract_number_types
+          end
+        end
       end
     end
 
-    def test_extract_number_types_returns_local_and_e164_for_gb
-      uk_local_numbers = %w(07780991912 7780991912)
-      uk_local_numbers.each do |number|
-        telephone_number = TelephoneNumber.parse(number, "GB")
-        assert_equal %w(7780991912 447780991912), telephone_number.extract_number_types
-      end
-    end
+    # def test_extract_number_types_returns_local_and_e164_for_us
+    #   us_local_numbers = %w(3175083345 13175083345)
+    #   us_local_numbers.each do |number|
+    #     telephone_number = TelephoneNumber.parse(number, "US")
+    #     assert_equal us_local_numbers, telephone_number.extract_number_types
+    #   end
+    # end
 
-    def test_extract_number_types_returns_local_and_e164_for_in
-      india_local_numbers = %w(09176642499 9176642499)
-      india_local_numbers.each do |number|
-        telephone_number = TelephoneNumber.parse(number, "IN")
-        assert_equal %w(9176642499 919176642499), telephone_number.extract_number_types
-      end
-    end
+    # def test_extract_number_types_returns_local_and_e164_for_gb
+    #   uk_local_numbers = %w(07780991912 7780991912)
+    #   uk_local_numbers.each do |number|
+    #     telephone_number = TelephoneNumber.parse(number, "GB")
+    #     assert_equal %w(7780991912 447780991912), telephone_number.extract_number_types
+    #   end
+    # end
 
-    def test_extract_number_types_returns_local_and_e164_for_de
-      german_local_numbers = %w(15222503070 015222503070)
-      german_local_numbers.each do |number|
-        telephone_number = TelephoneNumber.parse(number, "DE")
-        assert_equal %w(15222503070 4915222503070), telephone_number.extract_number_types
-      end
-    end
+    # def test_extract_number_types_returns_local_and_e164_for_in
+    #   india_local_numbers = %w(09176642499 9176642499)
+    #   india_local_numbers.each do |number|
+    #     telephone_number = TelephoneNumber.parse(number, "IN")
+    #     assert_equal %w(9176642499 919176642499), telephone_number.extract_number_types
+    #   end
+    # end
+
+    # def test_extract_number_types_returns_local_and_e164_for_de
+    #   german_local_numbers = %w(15222503070 015222503070)
+    #   german_local_numbers.each do |number|
+    #     telephone_number = TelephoneNumber.parse(number, "DE")
+    #     assert_equal %w(15222503070 4915222503070), telephone_number.extract_number_types
+    #   end
+    # end
 
     def test_extract_number_types_returns_local_and_e164_when_number_is_invalid
       assert_equal %w(1305550029 11305550029), TelephoneNumber.parse("1305550029", "US").extract_number_types
