@@ -109,22 +109,6 @@ module TelephoneNumber
     def test_validate_with_invalid_country_returns_empty
       assert_equal @consumer.validate("1234567890", "NOTREAL"), []
     end
-
-    # FORMATTING TESTS################################################
-
-    # def test_extract_format_grabs_us_format_with_area_code
-    #   format = @consumer.extract_format("3175082489", "US")
-    #   assert_equal "(\\d{3})(\\d{3})(\\d{4})", format[:pattern]
-    #   assert_equal "($1)$2-$3", format[:format]
-    #   assert_equal "$1-$2-$3", format[:intlFormat]
-    # end
-
-    # def test_extract_format_grabs_us_format_without_area_code
-    #   format = @consumer.extract_format("5082489", "US")
-    #   assert_equal "(\\d{3})(\\d{4})", format[:pattern]
-    #   assert_equal "$1-$2", format[:format]
-    #   assert_equal "NA", format[:intlFormat]
-    # end
   end
 end
 

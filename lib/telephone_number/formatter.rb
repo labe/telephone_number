@@ -6,7 +6,7 @@ module TelephoneNumber
     end
 
     def formatted_national_number
-      return unless valid?
+      return national_number if !valid? || format.nil?
       captures = national_number.match(Regexp.new(format[:pattern])).captures
       country_data = TelephoneNumber::PhoneData.phone_data[country.to_sym]
       national_prefix_formatting_rule = format[:national_prefix_formatting_rule] \
@@ -21,6 +21,27 @@ module TelephoneNumber
 
       format_string = format[:format].gsub(/\$\d/, "%s")
       format_string % captures
+    end
+
+    def extract_format
+      native_country_format = detect_format(country.to_sym)
+      return native_country_format if native_country_format
+
+      # This means we couldn't find an applicable format so we now need to scan through the hierarchy
+      parent_country_code = TelephoneNumber::PhoneData.phone_data.detect do |country_code, country_data|
+        country_data[TelephoneNumber::PhoneData::COUNTRY_CODE] == TelephoneNumber::PhoneData.phone_data[self.country.to_sym][TelephoneNumber::PhoneData::COUNTRY_CODE] \
+          && country_data[:main_country_for_code] == "true"
+      end
+      detect_format(parent_country_code[0])
+    end
+
+    def detect_format(country_code)
+      country_data = TelephoneNumber::PhoneData.phone_data[country_code.to_sym]
+      country_data[TelephoneNumber::PhoneData::FORMATS].detect do |format|
+        (format[TelephoneNumber::PhoneData::LEADING_DIGITS].nil? \
+          || national_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::LEADING_DIGITS]})")) \
+          && national_number =~ Regexp.new("^(#{format[:pattern]})$")
+      end
     end
   end
 end
