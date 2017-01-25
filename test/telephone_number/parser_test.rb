@@ -2,50 +2,49 @@ require "test_helper"
 
 module TelephoneNumber
   class ParserTest < Minitest::Test
-    class Consumer; include TelephoneNumber::Parser; end;
-
-    def setup
-      @consumer = Consumer.new
-    end
-
     def test_sanitize_removes_all_non_numeric_characters
       numbers = %w(555$$@@5555555 ##$#%#5555555555)
       numbers.each do |number|
-        assert_equal '5555555555', @consumer.sanitize(number)
+        telephone_number = TelephoneNumber.parse(number, "US")
+        assert_equal '5555555555', telephone_number.sanitize(number)
       end
     end
 
     def test_extract_number_types_returns_local_and_e164_for_us
       us_local_numbers = %w(3175083345 13175083345)
       us_local_numbers.each do |number|
-        assert_equal us_local_numbers, @consumer.extract_number_types(number, "US")
+        telephone_number = TelephoneNumber.parse(number, "US")
+        assert_equal us_local_numbers, telephone_number.extract_number_types
       end
     end
 
     def test_extract_number_types_returns_local_and_e164_for_gb
       uk_local_numbers = %w(07780991912 7780991912)
       uk_local_numbers.each do |number|
-        assert_equal %w(7780991912 447780991912), @consumer.extract_number_types(number, "GB")
+        telephone_number = TelephoneNumber.parse(number, "GB")
+        assert_equal %w(7780991912 447780991912), telephone_number.extract_number_types
       end
     end
 
     def test_extract_number_types_returns_local_and_e164_for_in
       india_local_numbers = %w(09176642499 9176642499)
       india_local_numbers.each do |number|
-        assert_equal %w(9176642499 919176642499), @consumer.extract_number_types(number, "IN")
+        telephone_number = TelephoneNumber.parse(number, "IN")
+        assert_equal %w(9176642499 919176642499), telephone_number.extract_number_types
       end
     end
 
     def test_extract_number_types_returns_local_and_e164_for_de
       german_local_numbers = %w(15222503070 015222503070)
       german_local_numbers.each do |number|
-        assert_equal %w(15222503070 4915222503070), @consumer.extract_number_types(number, "DE")
+        telephone_number = TelephoneNumber.parse(number, "DE")
+        assert_equal %w(15222503070 4915222503070), telephone_number.extract_number_types
       end
     end
 
     def test_extract_number_types_returns_local_and_e164_when_number_is_invalid
-      assert_equal %w(1305550029 11305550029), @consumer.extract_number_types("1305550029", "US")
-      assert_equal %w(19222503070 4919222503070), @consumer.extract_number_types("19222503070", "DE")
+      assert_equal %w(1305550029 11305550029), TelephoneNumber.parse("1305550029", "US").extract_number_types
+      assert_equal %w(19222503070 4919222503070), TelephoneNumber.parse("19222503070", "DE").extract_number_types
     end
 
     ### VALIDATION TESTS #################################################
@@ -57,10 +56,10 @@ module TelephoneNumber
                             12023461100)
 
       valid_us_numbers.each do |number|
-        refute @consumer.validate(number, "US").empty?
+        refute TelephoneNumber.parse(number, "US").validate.empty?
       end
 
-      assert @consumer.validate("11305555555", "US").empty?
+      assert TelephoneNumber.parse("11305555555", "US").validate.empty?
     end
 
     def test_validate_uk_numbers
@@ -68,12 +67,12 @@ module TelephoneNumber
                             442076299400 442072227888)
 
       valid_uk_numbers.each do |number|
-        refute @consumer.validate(number, "GB").empty?
+        refute TelephoneNumber.parse(number, "GB").validate.empty?
       end
 
-      invalid_uk_numbers = %w(44987654321654 4408444156790)
+      invalid_uk_numbers = %w(44987654321654 440844415679032)
       invalid_uk_numbers.each do |number|
-        assert @consumer.validate(number, "GB").empty?
+        assert TelephoneNumber.parse(number, "GB").validate.empty?
       end
     end
 
@@ -82,7 +81,7 @@ module TelephoneNumber
                             16135550122 16135550131 15146708700 14169158200)
 
       valid_ca_numbers.each do |number|
-        refute @consumer.validate(number, "CA").empty?
+        refute TelephoneNumber.parse(number, "CA").validate.empty?
       end
     end
 
@@ -93,7 +92,7 @@ module TelephoneNumber
                             911123583754)
 
       valid_in_numbers.each do |number|
-        refute @consumer.validate(number, "IN").empty?
+        refute TelephoneNumber.parse(number, "IN").validate.empty?
       end
 
       invalid_in_numbers = %w(5622231515 2942433300 2912510101 1126779191
@@ -102,12 +101,12 @@ module TelephoneNumber
                               1123583754)
 
       invalid_in_numbers.each do |number|
-        assert @consumer.validate(number, "IN").empty?
+        refute TelephoneNumber.parse(number, "IN").validate.empty?
       end
     end
 
     def test_validate_with_invalid_country_returns_empty
-      assert_equal @consumer.validate("1234567890", "NOTREAL"), []
+      assert_equal TelephoneNumber.parse("1234567890", "NOTREAL").validate, []
     end
   end
 end

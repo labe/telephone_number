@@ -3,18 +3,19 @@ module TelephoneNumber
     include TelephoneNumber::Parser
     include TelephoneNumber::Formatter
 
-    attr_reader :original_number, :country, :e164_number, :national_number
+    attr_reader :original_number, :country, :e164_number, :national_number, :country_data
 
     def initialize(number, country)
       return unless number && country
 
       @original_number = sanitize(number)
       @country = country.upcase.to_sym
-      @national_number, @e164_number = extract_number_types(@original_number, @country)
+      @country_data = TelephoneNumber::PhoneData.phone_data[@country]
+      @national_number, @e164_number = extract_number_types
     end
 
     def valid_types
-      @valid_types ||= validate(e164_number, country)
+      @valid_types ||= validate
     end
 
     def valid?(keys = [])
