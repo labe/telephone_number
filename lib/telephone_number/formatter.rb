@@ -1,13 +1,8 @@
 module TelephoneNumber
   module Formatter
-    def full_e164
-      return unless valid?
-      "+#{e164_number}"
-    end
-
     def formatted_national_number
-      return national_number if !valid? || format.nil?
-      captures = national_number.match(Regexp.new(format[TelephoneNumber::PhoneData::PATTERN])).captures
+      return normalized_number if !valid? || format.nil?
+      captures = normalized_number.match(Regexp.new(format[TelephoneNumber::PhoneData::PATTERN])).captures
       national_prefix_formatting_rule = format[TelephoneNumber::PhoneData::NATIONAL_PREFIX_FORMATTING_RULE] \
                                          || country_data[TelephoneNumber::PhoneData::NATIONAL_PREFIX_FORMATTING_RULE]
 
@@ -21,6 +16,8 @@ module TelephoneNumber
       format_string = format[:format].gsub(/\$\d/, "%s")
       format_string % captures
     end
+
+    private
 
     def extract_format
       native_country_format = detect_format(country.to_sym)
@@ -38,8 +35,8 @@ module TelephoneNumber
       data_for_country = TelephoneNumber::PhoneData.phone_data[country_code.to_sym]
       data_for_country[TelephoneNumber::PhoneData::FORMATS].detect do |format|
         (format[TelephoneNumber::PhoneData::LEADING_DIGITS].nil? \
-          || national_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::LEADING_DIGITS]})")) \
-          && national_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::PATTERN]})$")
+          || normalized_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::LEADING_DIGITS]})")) \
+          && normalized_number =~ Regexp.new("^(#{format[TelephoneNumber::PhoneData::PATTERN]})$")
       end
     end
   end
